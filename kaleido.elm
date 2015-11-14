@@ -15,9 +15,6 @@ import Time exposing (Time)
 dimX = 600
 dimY = 600
 
-triangle : Float -> Form
-triangle alpha = filled red <| ngon 3 50
-
 time : Signal Time
 time = Signal.map Time.inSeconds (Time.every (25 * Time.millisecond))
 
@@ -25,22 +22,21 @@ slowTime : Float -> Signal Time
 slowTime f = Signal.map (\t -> t/f) time
 
 
-main = Signal.map (\fs -> collage dimX dimY 
-           ( (rect dimX dimY |> filled black) :: fs)) (kaleido 6)
+main = Signal.map (\f -> collage dimX dimY 
+           ((rect dimX dimY |> filled black) :: [f])) (kaleido 6)
 
 colors : List Color
 colors = [ yellow, orange, red,  purple, blue, green ]
 
-kaleido : Int -> Signal (List Form)
+kaleido : Int -> Signal Form
 kaleido n = 
  let
    rads = List.map (\x -> 2*pi*toFloat x/toFloat n) [0..n-1]
    coords = combine (List.map star rads)
    p col = Signal.map (polyg col) coords
    polys = combine (List.map2 (\alpha col -> Signal.map (rotate alpha) (p col)) rads colors)
- in Signal.map2 (\ps t -> List.map (rotate (2*pi*sin t)) ps) 
-            polys
-            (slowTime 3)
+ in Signal.map group (Signal.map2 (\ps t -> List.map (rotate (2*pi*sin t)) ps) 
+              polys (slowTime 3))
  
 
 type alias Coord = (Float,Float)
@@ -60,17 +56,4 @@ star x =
 polyg : Color -> List Coord -> Form 
 polyg col cs =  scale 75 << filled col <| polygon cs 
  
-combine : List (Signal a) -> Signal (List a)
-combine = List.foldr (Signal.map2 (::)) (Signal.constant [])
-
-
-{- 
-
-deg t = degrees (toFloat (round t % 360))
-
-showT : Time -> Element
-showT t = collage (2*dimX) (2*dimY) [ rotate (deg (6*t)) <| triangle t
-                                    , text (fromString (toString t))
-                                    ]
-
--}
+combine : List (Signal a) -> Signal (Li
