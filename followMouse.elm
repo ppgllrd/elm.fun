@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- A snake of hexagons follows mouse 
+-- A snake of hexagons follows mouse
 --
 -- Can be tested online on http://elm-lang.org/try
 --
@@ -17,35 +17,42 @@ import Signal
 hexagon : Color -> Form
 hexagon clr =
   filled clr (ngon 6 10)
-  
-                   
+
+
 main : Signal Element
-main = Signal.map showL signals
+main =
+  Signal.map showL signals
 
 
 signals : Signal (List (Int,Int))
-signals = 
+signals =
   combine (List.map (flip Time.delay Mouse.position) <| List.map (\x -> x*75) [0..19])
 
 
 dimX = 400
 dimY = 400
 
+
 toScreen : (Int,Int) -> (Float,Float)
-toScreen (x,y) = (-dimX + toFloat x, dimY - toFloat y)
+toScreen (x,y) =
+  (-dimX + toFloat x, dimY - toFloat y)
+
 
 toColor : Int -> List a -> Color
-toColor i xs = 
- let 
-   minRed = 175 
+toColor i xs =
+ let
+   minRed = 175
    l = List.length xs
- in rgb (minRed + (l-i)*(255-minRed) // l) 0 0 
+ in
+   rgb (minRed + (l-i)*(255-minRed) // l) 0 0
 
-                   
-showL : List (Int,Int) -> Element                   
-showL xs =  collage (2*dimX) (2*dimY) <|
-    List.indexedMap (\i pt -> move (toScreen pt) <| hexagon (toColor i xs)) xs
-                   
-                   
+
+showL : List (Int,Int) -> Element
+showL xs =
+  collage (2*dimX) (2*dimY) <|
+  List.indexedMap (\i pt -> move (toScreen pt) <|  hexagon (toColor i xs)) xs
+
+
 combine : List (Signal a) -> Signal (List a)
-combine = List.foldr (Signal.map2 (::)) (Signal.constant [])
+combine =
+  List.foldr (Signal.map2 (::)) (Signal.constant [])
